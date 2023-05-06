@@ -1,3 +1,4 @@
+// main
 export function forEachBodyRow (tableSelector, callback) {
   const htmlTable = document.querySelector(tableSelector)
   if (!htmlTable) return
