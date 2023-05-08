@@ -11,7 +11,7 @@ export class BookmarkControl {
     this.percentageCase = {configP}['data']['percentage_case'] ?? []
   }
 
-  setBookmark (bk, value) {
+  saveBookmark (bk, value) {
     if (this.patientInfoExtract.includes(bk) && !(bk in this.rvBk)) {
       this.rvBk[bk] = value
     }
