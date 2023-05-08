@@ -26,23 +26,25 @@ export function forEachBodyRow (tableSelector, callback, dbug = false) {
   const tableBodyRowsAndCells = [...tableBodyRows].map(tr => {
     const tdList = [...tr.querySelectorAll('td')]
     const tdTextList = tdList.map(td => td.innerText.trim().toLocaleLowerCase())
-    return [tr, tdList, tdTextList]
+    return [tdTextList, tdList, tr]
   })
 
   if (dbug) {
-    console.log('forEachBodyRow ->', tableSelector)
+    console.log('------------------------------------------')
+    console.log(`forEachBodyRow para --> ${tableSelector} <--`)
     console.log('Iterando elementos ->', tableBodyRowsAndCells)
   }
 
   tableBodyRowsAndCells.forEach((row, index, array) => {
-    const [tr, tdList, tdTextList] = row
+    const [tdTextList, tdList, tr] = row
 
     if (dbug) {
-      console.log('fila ->', tdTextList)
-      console.log('tr ->', tr)
-      console.log('lista de td\'s ->', tdList)
+      console.log('------------------------------------------')
+      console.log(`Fila ${index.toString()} ->`, tdTextList)
+      console.log('Lista de td\'s ->', tdList)
+      console.log('tr element ->', tr)
     }
-    callback(tdTextList, index, tr, tdList, array)
+    callback(tdTextList, index, tdList, tr, array)
   })
 }
 
@@ -84,7 +86,7 @@ export function getCellsIndexes (tableHeaderRowSelector, tableTitles) {
       results[key] = null
     }
   })
-  console.log('Indexes of ', tableHeaderRowSelector)
+  console.log('getCellsIndexes para ', tableHeaderRowSelector)
   console.log('->', { ...results })
   return results
 }
