@@ -1,44 +1,54 @@
 // main
-export function forEachTBodyRow (tableSelector, callback, dbug = false) {
-  if (tableSelector === '' || !callback) return null
+export function forEachBodyRow (tableSelector, callback, dbug = false) {
+  if (tableSelector === '' || typeof callback !== 'function') return
 
   const htmlTable = document.querySelector(tableSelector)
+
   if (!htmlTable) {
     console.warn('No se encontró la tabla con el selector ->', tableSelector)
-    return null
+    return
   }
 
   const tableBody = htmlTable.querySelector('tbody')
+
   if (!tableBody) {
     console.warn('No se encontró el cuerpo de la tabla con el selector ->', tableSelector)
-    return null
+    return
   }
 
   const tableBodyRows = tableBody.querySelectorAll('tr')
-  if (!tableBodyRows) {
+
+  if (tableBodyRows.length === 0) {
     console.warn('No se encontraron filas en la tabla con el selector ->', tableSelector)
+    return
   }
 
-  const tableBodyRowsCells = [...tableBodyRows].map(tr => tr.querySelectorAll('td'))
-  const elementsToIterate = [...tableBodyRowsCells]
-    .map(tr => [...tr].map(td => td.innerText.trim().toLocaleLowerCase()))
-
-  if (dbug) {
-    console.log('forEachTBodyRow ->', tableSelector)
-    console.log('Iterando elementos ->', elementsToIterate)
-  }
-
-  elementsToIterate.forEach((row, index, array) => {
-    if (dbug) console.log('fila ->', row)
-    callback(row, index, array)
+  const tableBodyRowsAndCells = [...tableBodyRows].map(tr => {
+    const tdList = [...tr.querySelectorAll('td')]
+    const tdTextList = tdList.map(td => td.innerText.trim().toLocaleLowerCase())
+    return [tr, tdList, tdTextList]
   })
 
-  return elementsToIterate
+  if (dbug) {
+    console.log('forEachBodyRow ->', tableSelector)
+    console.log('Iterando elementos ->', tableBodyRowsAndCells)
+  }
+
+  tableBodyRowsAndCells.forEach((row, index, array) => {
+    const [tr, tdList, tdTextList] = row
+
+    if (dbug) {
+      console.log('fila ->', tdTextList)
+      console.log('tr ->', tr)
+      console.log('lista de td\'s ->', tdList)
+    }
+    callback(tdTextList, index, tr, tdList, array)
+  })
 }
 
 export function getCellsIndexes (tableHeaderRowSelector, tableTitles) {
   const tableHeader = document.querySelectorAll(`${tableHeaderRowSelector} th`)
-  if (tableHeader.length === 0 || tableTitles.length === 0) return null
+  if (tableHeader.length === 0) return null
 
   let siteTitles = []
   let resultsKeys = []
@@ -50,6 +60,9 @@ export function getCellsIndexes (tableHeaderRowSelector, tableTitles) {
     siteTitles = Object.keys(tableTitles)
     resultsKeys = Object.values(tableTitles)
   }
+
+  if (siteTitles.length === 0 || resultsKeys.length === 0) return null
+
   const results = {}
 
   tableHeader.forEach((th, index) => {
@@ -71,7 +84,8 @@ export function getCellsIndexes (tableHeaderRowSelector, tableTitles) {
       results[key] = null
     }
   })
-
+  console.log('Indexes of ', tableHeaderRowSelector)
+  console.log('->', { ...results })
   return results
 }
 
@@ -100,4 +114,25 @@ export function getTableElements (tableSelector) {
     headerRows,
     bodyRows
   }
+}
+
+export function getRepitedRows (rows, areEqualRows) {
+  const allRepeatedRows = []
+
+  rows.forEach((row, index) => {
+    const rowRest = rows.slice(index + 1)
+
+    if (rowRest.length === 0) return
+
+    const repeatedRows = rowRest.filter(row2 => areEqualRows(row, row2))
+
+    if (repeatedRows.length === 0) return
+
+    const alreadyInRepeatedRows = allRepeatedRows
+      .some(repeatedRow => areEqualRows(repeatedRow, row))
+
+    if (!alreadyInRepeatedRows) {
+      allRepeatedRows.push([row, ...repeatedRows])
+    }
+  })
 }
