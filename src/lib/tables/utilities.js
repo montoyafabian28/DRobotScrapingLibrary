@@ -1,48 +1,49 @@
 // main
-export function forEachBodyRow (tableSelector, callback, dbug = false) {
-  if (tableSelector === '' || typeof callback !== 'function') return
+export function forEachRow (callback, selectors, dbug = true) {
+  if (typeof callback !== 'function' ||
+  !Array.isArray(selectors)) return
 
-  const htmlTable = document.querySelector(tableSelector)
+  let rowsSelector = 'table tr'
+  let cellsSelector = ''
 
-  if (!htmlTable) {
-    console.warn('No se encontró la tabla con el selector ->', tableSelector)
+  if (selectors.length === 0 || selectors.length === 1) {
+    cellsSelector = 'td'
+  } else {
+    const [selector1, selector2] = selectors
+    rowsSelector = selector1
+    cellsSelector = selector2
+  }
+
+  const rows = document.querySelectorAll(rowsSelector)
+
+  if (rows.length === 0) {
+    console.log('forEachRow')
+    console.warn('No se encontraron filas con el selector ->', rowsSelector)
     return
   }
 
-  const tableBody = htmlTable.querySelector('tbody')
+  const rowsAndCells = [...rows].map(tr => {
+    const tdList = [...tr.querySelectorAll(cellsSelector)]
+    if (tdList.length === 0) return [[], [], tr]
 
-  if (!tableBody) {
-    console.warn('No se encontró el cuerpo de la tabla con el selector ->', tableSelector)
-    return
-  }
-
-  const tableBodyRows = tableBody.querySelectorAll('tr')
-
-  if (tableBodyRows.length === 0) {
-    console.warn('No se encontraron filas en la tabla con el selector ->', tableSelector)
-    return
-  }
-
-  const tableBodyRowsAndCells = [...tableBodyRows].map(tr => {
-    const tdList = [...tr.querySelectorAll('td')]
     const tdTextList = tdList.map(td => td.innerText.trim().toLocaleLowerCase())
     return [tdTextList, tdList, tr]
   })
 
   if (dbug) {
     console.log('------------------------------------------')
-    console.log(`forEachBodyRow para --> ${tableSelector} <--`)
-    console.log('Iterando elementos ->', tableBodyRowsAndCells)
+    console.log(`forEachRow para --> ${rowsSelector} <--`)
+    console.log('Iterando elementos ->', rowsAndCells)
   }
 
-  tableBodyRowsAndCells.forEach((row, index, array) => {
+  rowsAndCells.forEach((row, index, array) => {
     const [tdTextList, tdList, tr] = row
 
     if (dbug) {
       console.log('------------------------------------------')
       console.log(`Fila ${index.toString()} ->`, tdTextList)
-      console.log('Lista de td\'s ->', tdList)
-      console.log('tr element ->', tr)
+      console.log('Lista de elementos html ->', tdList)
+      console.log('Elemento html fila ->', tr)
     }
     callback(tdTextList, index, tdList, tr, array)
   })
@@ -106,15 +107,25 @@ export function getTableElements (tableSelector) {
       .map(row => [...row.querySelectorAll('th')])
   }
 
-  const bodyRows = [...tableBody.querySelectorAll('tr')]
-    .map(row => [...row.querySelectorAll('td')])
+  let bodyRows = null
+  if (!tableBody) {
+    bodyRows = [...table.querySelectorAll('tr')]
+      .map(row => [...row.querySelectorAll('td')])
+  } else {
+    bodyRows = [...tableBody.querySelectorAll('tr')]
+      .map(row => [...row.querySelectorAll('td')])
+  }
+
+  const bodyRowsText = bodyRows.map(row => row.map(td => 
+    td.innerText.trim().toLocaleLowerCase()))
 
   return {
     table,
     tableHeader,
     tableBody,
     headerRows,
-    bodyRows
+    bodyRows,
+    bodyRowsText
   }
 }
 
@@ -138,3 +149,5 @@ export function getRepitedRows (rows, areEqualRows) {
     }
   })
 }
+
+export function findInRows 
